@@ -12,15 +12,11 @@ git clone https://github.com/jaeseopark/diffusionbee-stable-diffusion-ui
 cd diffusionbee-stable-diffusion-ui/backends/stable_diffusion
 
 brew install pyenv
-pyenv install 3.10.15
-pyenv local 3.10.15
-
-python3 --version # Ensure it shows the correct version. If not, check if the pyenv init script is in ~/.zshrc
+pyenv install $(cat .python-version)
 
 python3 -m venv venv
 source venv/bin/activate
 pip install pip --upgrade
-
 pip install -r requirements.txt
 ```
 

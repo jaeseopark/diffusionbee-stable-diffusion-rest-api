@@ -46,7 +46,7 @@ model_container = ModelContainer()
 home_path = Path.home()
 
 projects_root_path = os.path.join(home_path, ".diffusionbee")
-tdict_collection_path = os.path.join(projects_root_path, "downloaded_assets")
+tdict_dirs = [os.path.join(projects_root_path, dirname) for dirname in ["downloaded_assets", "imported_models"]]
 
 if not os.path.isdir(projects_root_path):
     os.mkdir(projects_root_path)

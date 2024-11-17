@@ -1,9 +1,9 @@
-from tdict import TDict
-from ..sd_run import SDRun 
-import math
 from dataclasses import fields
-from .stdin_input import is_avail, get_input
 
+from tdict import TDict
+
+from .stdin_input import is_avail, get_input
+from ..sd_run import SDRun
 
 tdict_model_versions = {}
 def get_tdict_model_version(tdict_path):

@@ -4,15 +4,19 @@ import os
 from PIL import Image
 from flask import Flask, request, jsonify, send_file
 
-from diffusionbee_backend import process_opt as _process_opt, get_generator, tdict_collection_path
+from diffusionbee_backend import process_opt as _process_opt, get_generator, tdict_dirs
 
 # Initialize Flask app
 app = Flask(__name__)
 generator = get_generator()
 
 def process_opt(req: dict, *args, **kwargs):
-    req["model_tdict_path"] = os.path.join(tdict_collection_path, req["model_tdict_filename"])
-    return _process_opt(req, *args, **kwargs)
+    filename = req["model_tdict_filename"]
+    for tdict_dir in tdict_dirs:
+        if filename in os.listdir(tdict_dir):
+            req["model_tdict_path"] = os.path.join(tdict_dir, filename)
+            return _process_opt(req, *args, **kwargs)
+    raise RuntimeError(f"tdict {filename=} not found")
 
 
 @app.route("/generate/single", methods=["POST"])
@@ -45,7 +49,8 @@ def generate_images():
 
 @app.get("/tdicts")
 def get_tdict_filenames():
-    return dict(filenames=os.listdir(tdict_collection_path)), 200
+    filenames = [filename for dirname in tdict_dirs for filename in os.listdir(dirname)]
+    return dict(filenames=filenames), 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

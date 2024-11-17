@@ -21,17 +21,9 @@ pip install -r requirements.txt
 ```
 
 ```shell
-# Rest API
 cd backends/stable_diffusion
 source venv/bin/activate
 python3 app.py
-```
-
-```shell
-# Electron
-cd electron_app
-npm install
-npm run electron:serve
 ```
 
 ### Tdicts 
@@ -50,9 +42,10 @@ The response, when only 1 model is installed:
 
 See [`sd_run.py`](backends/stable_diffusion/stable_diffusion/sd_run.py) for the full list of arguments. Most args are optional and will get assigned default values.
 
-Mandatory:
-* `model_tdict_filename`: Grab from the response from the `/tdicts` endpoint. Ex. `Default_SDB_0.1_SDB_0.1.tdict`
-* `prompt`: a string value
+| Parameter            | Type/Description                                           | Is Required | Notes                                               |
+|----------------------|------------------------------------------------------------|-------------|-----------------------------------------------------|
+| model_tdict_filename | Filename of the model. Ex. `Default_SDB_0.1_SDB_0.1.tdict` | Yes         | Grab from the response from the `/tdicts` endpoint. |
+| prompt               | Prompt for the generation                                  | Yes         | Up to 77 words                                      |
 
 ### Single image
 

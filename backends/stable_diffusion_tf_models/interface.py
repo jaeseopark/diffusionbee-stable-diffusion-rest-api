@@ -1,16 +1,11 @@
-
-
-
 import tensorflow as tf
+
 from autoencoder_kl import Decoder, Encoder
-from diffusion_model import UNetModel , UNetModelV2
 from clip_encoder import CLIPTextTransformer
 from clip_encoder_v2 import CLIPTextTransformerV2
 from controlnet import ControlNet, HintNet
-
-from mapping_constants import PYTORCH_CKPT_MAPPING , PYTORCH_CKPT_MAPPING_SD2
-
-import json
+from diffusion_model import UNetModel, UNetModelV2
+from mapping_constants import PYTORCH_CKPT_MAPPING, PYTORCH_CKPT_MAPPING_SD2
 
 MAX_TEXT_LEN = 77
 import numpy as np

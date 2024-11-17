@@ -1,30 +1,27 @@
+import copy
+import inspect
+import math
+import os
+import time
+
 import numpy as np
 from tqdm import tqdm
-import math
-from .clip_tokenizer import SimpleTokenizer , SimpleTokenizerV2, sdxl_text_projection_mat_path
-import inspect
 
-import time
-import os 
-import copy
-
+from .clip_tokenizer import SimpleTokenizer, SimpleTokenizerV2, sdxl_text_projection_mat_path
 
 MAX_TEXT_LEN = 77
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-from tdict import TDict
-
 from .schedulers.get_scheduler import get_scheduler
 
 from .utils.logging import log_object
-from .utils.extra_model_utils import add_lora_ti_weights
-from .utils.image_preprocess import process_inp_img 
+from .utils.image_preprocess import process_inp_img
 
-from .plugins.plugin_system import StableDiffusionPluginMixin
 from .utils.utils import get_tdict_model_version
 
+from .plugins.plugin_system import StableDiffusionPluginMixin
 from .plugins.controlnet import ControlNetPlugin
 from .plugins.sd15_inpainting import Sd15Inpainting
 from .plugins.inpainting import MaskInpainting
@@ -155,13 +152,13 @@ class StableDiffusion(StableDiffusionPluginMixin):
         else:
             inputs = self.tokenizer.encode(prompt)
             
-        if len(inputs) >= 77:
+        if len(inputs) >= MAX_TEXT_LEN:
             print("[SD] Prompt is too long, stripping it ")
-            inputs = inputs[:77]
+            inputs = inputs[:MAX_TEXT_LEN]
         if self.sd_base_version == 2:
-            phrase = inputs + [0] * (77 - len(inputs))
+            phrase = inputs + [0] * (MAX_TEXT_LEN - len(inputs))
         else:
-            phrase = inputs + [49407] * (77 - len(inputs))
+            phrase = inputs + [49407] * (MAX_TEXT_LEN - len(inputs))
         phrase = np.array(phrase)[None].astype("int32")
 
 
@@ -175,7 +172,7 @@ class StableDiffusion(StableDiffusionPluginMixin):
             sd_run.negative_prompt = ""
         sd_run.unconditional_tokens = self.tokenize(sd_run.negative_prompt)
 
-        pos_ids = np.array(list(range(77)))[None].astype("int32")
+        pos_ids = np.array(list(range(MAX_TEXT_LEN)))[None].astype("int32")
 
         context = self.model.run_text_enc(sd_run.tokens, pos_ids)
         unconditional_context = self.model.run_text_enc(sd_run.unconditional_tokens, pos_ids)
@@ -408,7 +405,7 @@ class StableDiffusion(StableDiffusionPluginMixin):
     def generate(
         self,
         sd_run_params
-    ):
+    ) -> dict:
         
         sd_run = copy.deepcopy(sd_run_params)
 

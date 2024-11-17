@@ -14,14 +14,14 @@ class SDRun():
 
     starting_img_given:bool = False 
     do_masking_diffusion:bool = False # if you wanna mask the latent at every sd step
-    img_height: int = None
-    img_width: int = None
+    img_height: int = 512
+    img_width: int = 512
 
     negative_prompt:str=""
 
     batch_size:int =1
     num_steps:int =25
-    guidance_scale:float=7.5
+    guidance_scale:float=15
     seed:int=None
     seed_type:str="np"
     small_mod_seed:int=None

@@ -1,18 +1,17 @@
 print("starting backend")
-import numpy as np
-import argparse
-from PIL import Image
 import json
-import random
-import multiprocessing
-import sys
-import copy
 import math
+import multiprocessing
+import os
+import random
+import sys
 import time
 import traceback
-import os
 from pathlib import Path
 
+from PIL import Image
+
+FILENAME_TRUNCATE_LENGTH = 30
 
 # b2py t2im {"prompt": "sun glasses" , "img_width":640 , "img_height" : 640 , "num_imgs" : 10 , "input_image":"/Users/divamgupta/Downloads/inn.png" , "mask_image" : "/Users/divamgupta/Downloads/maa.png" , "is_inpaint":true  }
 
@@ -47,6 +46,7 @@ model_container = ModelContainer()
 home_path = Path.home()
 
 projects_root_path = os.path.join(home_path, ".diffusionbee")
+tdict_dirs = [os.path.join(projects_root_path, dirname) for dirname in ["downloaded_assets", "imported_models"]]
 
 if not os.path.isdir(projects_root_path):
     os.mkdir(projects_root_path)
@@ -91,14 +91,10 @@ class Unbuffered(object):
 
 sys.stdout = Unbuffered(sys.stdout)
 
-
-
-
-
-def process_opt(d, generator):
+def process_opt(d, generator, should_save_locally=True) -> dict:
 
     batch_size = 1# int(d['batch_size'])
-    n_imgs = math.ceil(d['num_imgs'] / batch_size)
+    n_imgs = math.ceil(d.get("num_imgs", 1) / batch_size)
     sd_run = get_sd_run_from_dict(d)
 
     for i in range(n_imgs):
@@ -109,16 +105,20 @@ def process_opt(d, generator):
 
         outs  = generator.generate(sd_run)
 
-        if outs is None:
-            return
+        if should_save_locally:
+            save_locally(outs)
 
+        return outs
+
+def save_locally(outs):
+    if outs is not None:
         img = outs['img']
 
         if img is None:
             return
-        
+
         for i in range(len(img)):
-            s = ''.join(filter(str.isalnum, str(d['prompt'])[:30] ))
+            s = ''.join(filter(str.isalnum, str(d['prompt'])[:FILENAME_TRUNCATE_LENGTH]))
             fpath = os.path.join(defualt_data_root , "%s_%d.png"%(s ,  random.randint(0 ,100000000)) )
 
             Image.fromarray(img[i]).save(fpath)
@@ -129,13 +129,15 @@ def process_opt(d, generator):
 
             print("sdbk nwim %s"%(json.dumps(ret_dict)) )
 
-
+def get_generator(callback=None) -> StableDiffusion:
+    register_applet(model_container, FrameInterpolator)
+    return StableDiffusion(model_container, ModelInterface, None, model_name=None, callback=callback,
+                                debug_output_path=debug_output_path)
 
 
 def diffusion_bee_main():
 
     time.sleep(2)
-    register_applet(model_container , FrameInterpolator)
 
     print("sdbk mltl Loading Model")
 
@@ -148,8 +150,7 @@ def diffusion_bee_main():
             if "__stop__" in get_input():
                 return "stop"
 
-    generator = StableDiffusion( model_container , ModelInterface , None , model_name=None, callback=callback, debug_output_path=debug_output_path )    
-
+    generator = get_generator(callback=callback)
 
     print("sdbk mdld")
 

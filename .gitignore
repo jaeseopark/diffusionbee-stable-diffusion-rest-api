@@ -188,3 +188,7 @@ Temporary Items
 
 
 pretrained_weights/
+
+.idea/
+*.png
+*.jpeg

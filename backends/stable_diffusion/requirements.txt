@@ -1,4 +1,4 @@
-tensorflow==2.10.0
+tensorflow
 numpy
 regex
 tqdm
@@ -7,7 +7,7 @@ scipy
 ftfy
 fickling
 requests
-pyinstaller 
+pyinstaller
 onnxruntime
 opencv-python
 safetensors
@@ -15,3 +15,6 @@ cython
 numexpr
 pandas
 scikit-image
+tensorflow-macos
+tensorflow-metal
+Flask==3.1.0

@@ -60,5 +60,5 @@ Mandatory:
 curl -X POST http://localhost:5000/generate/single \
   -H "Content-Type: application/json" \
   -d @payload.json \
-  -o generated_image.png
+  -o generated_image.jpeg
 ```

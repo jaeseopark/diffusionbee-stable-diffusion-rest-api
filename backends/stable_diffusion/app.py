@@ -38,10 +38,10 @@ def generate_images():
 
     # Convert to byte array
     img_byte_arr = io.BytesIO()
-    image.save(img_byte_arr, format="PNG")
+    image.save(img_byte_arr, format="jpeg", quality=70, optimize=True, progressive=True)
     img_byte_arr = img_byte_arr.getvalue()
 
-    return img_byte_arr, 200, {'Content-Type': 'image/png'}
+    return img_byte_arr, 200, {'Content-Type': 'image/jpeg'}
 
 @app.get("/tdicts")
 def get_tdict_filenames():

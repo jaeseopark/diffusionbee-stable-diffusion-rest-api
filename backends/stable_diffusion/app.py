@@ -2,7 +2,7 @@ import io
 import os
 
 from PIL import Image
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, send_file
 
 from diffusionbee_backend import process_opt as _process_opt, get_generator, tdict_dirs
 
@@ -16,15 +16,18 @@ def process_opt(req: dict, *args, **kwargs):
         if filename in os.listdir(tdict_dir):
             req["model_tdict_path"] = os.path.join(tdict_dir, filename)
             return _process_opt(req, *args, **kwargs)
-    raise RuntimeError(f"tdict {filename=} not found")
+    raise FileNotFoundError(f"tdict {filename=} not found")
 
 
 @app.route("/generate/single", methods=["POST"])
 def generate_image():
     if request.json.get("num_imgs", 1) > 1:
-        return jsonify({"error": "Only single image allowed for this endpoint"}), 400
+        return dict(error="Only single image allowed for this endpoint"), 400
 
-    outs = process_opt(request.json, generator=generator, should_save_locally=False)
+    try:
+        outs = process_opt(request.json, generator=generator, should_save_locally=False)
+    except FileNotFoundError as e:
+        return dict(error=str(e)), 400
 
     image = Image.fromarray(outs['img'][0])
 

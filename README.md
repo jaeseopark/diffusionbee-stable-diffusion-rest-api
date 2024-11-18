@@ -29,7 +29,7 @@ python3 app.py
 ### Tdicts 
 
 ```shell
-curl -s http://localhost:5000/tdicts
+curl -s http://localhost:5825/tdicts
 ```
 
 The response, when only 1 model is installed:
@@ -50,7 +50,7 @@ See [`sd_run.py`](backends/stable_diffusion/stable_diffusion/sd_run.py) for the 
 ### Single image
 
 ```shell
-curl -X POST http://localhost:5000/generate/single \
+curl -X POST http://localhost:5825/generate/single \
   -H "Content-Type: application/json" \
   -d @payload.json \
   -o generated_image.jpeg

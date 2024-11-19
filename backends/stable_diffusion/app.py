@@ -1,5 +1,7 @@
 import io
 import os
+import threading
+import zipfile
 
 from PIL import Image
 from flask import Flask, request, send_file
@@ -9,13 +11,18 @@ from diffusionbee_backend import process_opt as _process_opt, get_generator, tdi
 # Initialize Flask app
 app = Flask(__name__)
 generator = get_generator()
+lock = threading.Lock()
 
 def process_opt(req: dict, *args, **kwargs):
     filename = req["model_tdict_filename"]
     for tdict_dir in tdict_dirs:
         if filename in os.listdir(tdict_dir):
             req["model_tdict_path"] = os.path.join(tdict_dir, filename)
-            return _process_opt(req, *args, **kwargs)
+            lock.acquire()
+            try:
+                return _process_opt(req, *args, **kwargs)
+            finally:
+                lock.release()
     raise FileNotFoundError(f"tdict {filename=} not found")
 
 
@@ -25,11 +32,11 @@ def generate_image():
         return dict(error="Only single image allowed for this endpoint"), 400
 
     try:
-        outs = process_opt(request.json, generator=generator, should_save_locally=False)
+        imgs = process_opt(request.json, generator=generator, should_save_locally=False)
     except FileNotFoundError as e:
         return dict(error=str(e)), 400
 
-    image = Image.fromarray(outs['img'][0])
+    image = Image.fromarray(imgs[0])
 
     img_byte_array = io.BytesIO()
     image.save(img_byte_array, format='png')
@@ -39,16 +46,21 @@ def generate_image():
 
 @app.route("/generate", methods=["POST"])
 def generate_images():
-    raise NotImplementedError
-    outs = process_opt(request.json, generator=generator, should_save_locally=False)
-    imgs = outs['img']
+    try:
+        imgs = process_opt(request.json, generator=generator, should_save_locally=False)
+    except FileNotFoundError as e:
+        return dict(error=str(e)), 400
 
-    # Convert to byte array
-    img_byte_arr = io.BytesIO()
-    image.save(img_byte_arr, format="jpeg", quality=70, optimize=True, progressive=True)
-    img_byte_arr = img_byte_arr.getvalue()
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w') as zf:
+        for i, diffused_img in enumerate(imgs):
+            img_file_buffer = io.BytesIO()
+            pillow_image = Image.fromarray(diffused_img)
+            pillow_image.save(img_file_buffer, format="jpeg", quality=70, optimize=True, progressive=True)
+            zf.writestr(f"diffused-{i}.jpeg", img_file_buffer.getvalue())
+    zip_buffer.seek(0)
 
-    return img_byte_arr, 200, {'Content-Type': 'image/jpeg'}
+    return zip_buffer, 200, {'Content-Type': 'application/zip'}
 
 @app.get("/tdicts")
 def get_tdict_filenames():

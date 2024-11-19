@@ -91,11 +91,12 @@ class Unbuffered(object):
 
 sys.stdout = Unbuffered(sys.stdout)
 
-def process_opt(d, generator, should_save_locally=True) -> dict:
+def process_opt(d, generator, should_save_locally=True) -> list:
 
     batch_size = 1# int(d['batch_size'])
     n_imgs = math.ceil(d.get("num_imgs", 1) / batch_size)
     sd_run = get_sd_run_from_dict(d)
+    imgs = []
 
     for i in range(n_imgs):
         
@@ -104,13 +105,14 @@ def process_opt(d, generator, should_save_locally=True) -> dict:
         print("got" , d )
 
         outs  = generator.generate(sd_run)
+        imgs.extend(outs['img'])
 
         if should_save_locally:
-            save_locally(outs)
+            save_locally(outs, d)
 
-        return outs
+    return imgs
 
-def save_locally(outs):
+def save_locally(outs, d):
     if outs is not None:
         img = outs['img']
 

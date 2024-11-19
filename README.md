@@ -55,3 +55,12 @@ curl -X POST http://localhost:5825/generate/single \
   -d @payload.json \
   -o generated_image.jpeg
 ```
+
+### Multiple images
+
+```shell
+curl -X POST http://localhost:5825/generate \
+  -H "Content-Type: application/json" \
+  -d @payload.json \
+  -o generated_images.zip
+```

@@ -21,7 +21,7 @@ class SDRun():
 
     batch_size:int =1
     num_steps:int =25
-    guidance_scale:float=15
+    guidance_scale:float=7.5
     seed:int=None
     seed_type:str="np"
     small_mod_seed:int=None

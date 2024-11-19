@@ -6,6 +6,7 @@ import zipfile
 from PIL import Image
 from flask import Flask, request, send_file
 
+from app_ui_func_provider import UiFuncProvider
 from diffusionbee_backend import process_opt as _process_opt, get_generator, tdict_dirs
 
 # Initialize Flask app
@@ -14,16 +15,11 @@ generator = get_generator()
 lock = threading.Lock()
 
 def process_opt(req: dict, *args, **kwargs):
-    filename = req["model_tdict_filename"]
-    for tdict_dir in tdict_dirs:
-        if filename in os.listdir(tdict_dir):
-            req["model_tdict_path"] = os.path.join(tdict_dir, filename)
-            lock.acquire()
-            try:
-                return _process_opt(req, *args, **kwargs)
-            finally:
-                lock.release()
-    raise FileNotFoundError(f"tdict {filename=} not found")
+    lock.acquire()
+    try:
+        return _process_opt(UiFuncProvider(req).get_enriched_payload(), *args, **kwargs)
+    finally:
+        lock.release()
 
 
 @app.route("/generate/single", methods=["POST"])
